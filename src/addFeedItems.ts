@@ -1,10 +1,3 @@
-import { Client } from '@notionhq/client'
-import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints'
-import ogp from 'ogp-parser'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TODO = any
-
 export const addFeedItems = async (
   newFeedItems: {
     [key: string]: TODO
@@ -13,7 +6,17 @@ export const addFeedItems = async (
   const notion = new Client({ auth: process.env.NOTION_KEY })
   const databaseId = process.env.NOTION_READER_DATABASE_ID || ''
 
-  newFeedItems.forEach(async (item) => {
+  const getFormattedTitle = (title: string, link?: string): string => {
+    if (link && link.includes('ncode.syosetu.com')) {
+      const matches = title.match(/-(.*?)]/)
+      if (matches && matches[1]) {
+        return matches[1].trim()
+      }
+    }
+    return title.trim()
+  }
+
+  for (const item of newFeedItems) {
     const { title, link, enclosure, pubDate } = item
     const domain = link?.match(/^https?:\/{2,}(.*?)(?:\/|\?|#|$)/)
 
@@ -22,11 +25,11 @@ export const addFeedItems = async (
         title: [
           {
             text: {
-              content: title,
+              content: getFormattedTitle(title, link),
             },
           },
         ],
-      },
+      }, 
       URL: {
         url: link,
       },
@@ -78,7 +81,7 @@ export const addFeedItems = async (
           },
         ]
       : []
-
+  
     try {
       await notion.pages.create({
         parent: { database_id: databaseId },
@@ -88,5 +91,5 @@ export const addFeedItems = async (
     } catch (error) {
       console.error(error)
     }
-  })
+  }
 }
