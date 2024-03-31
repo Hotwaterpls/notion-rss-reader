@@ -12,6 +12,8 @@ export const addFeedItems = async (
       if (matches && matches[1]) {
         return matches[1].trim()
       }
+    } else if (link && link.includes('tobooks.shop-pro.jp')) {
+      return title.replace('穏やか貴族の休暇のすすめ。', '').trim()
     }
     return title.trim()
   }
