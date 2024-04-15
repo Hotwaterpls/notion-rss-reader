@@ -1,3 +1,10 @@
+import { Client } from '@notionhq/client'
+import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints'
+import ogp from 'ogp-parser'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TODO = any
+
 export const addFeedItems = async (
   newFeedItems: {
     [key: string]: TODO
@@ -6,6 +13,7 @@ export const addFeedItems = async (
   const notion = new Client({ auth: process.env.NOTION_KEY })
   const databaseId = process.env.NOTION_READER_DATABASE_ID || ''
 
+//追加
   const getFormattedTitle = (title: string, link?: string): string => {
     if (link && link.includes('ncode.syosetu.com')) {
       const matches = title.match(/-(.*?)]/)
@@ -17,21 +25,24 @@ export const addFeedItems = async (
     }
     return title.trim()
   }
-
-  for (const item of newFeedItems) {
+//ここまで
+  
+  newFeedItems.forEach(async (item) => {
     const { title, link, enclosure, pubDate } = item
     const domain = link?.match(/^https?:\/{2,}(.*?)(?:\/|\?|#|$)/)
 
     const properties: TODO = {
-      Title: {
+     Title: {
         title: [
           {
             text: {
-              content: getFormattedTitle(title, link),
-            },
+ //↓へ変更             content: title,
+                 content: getFormattedTitle(title, link),
+           },
           },
         ],
       }, 
+    
       URL: {
         url: link,
       },
@@ -93,5 +104,5 @@ export const addFeedItems = async (
     } catch (error) {
       console.error(error)
     }
-  }
+  })
 }
